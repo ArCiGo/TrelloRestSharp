@@ -23,7 +23,7 @@ namespace RestSharp_Trello_Sample
         public string cardName = "";
 
         [Test, Order(1)]
-        public void BasicHTTPAuth()
+        public void CreateBoard()
         {
             RestClient client = new RestClient("https://api.trello.com/1");
             IRestRequest createBoardRequest = new RestRequest("/boards");
