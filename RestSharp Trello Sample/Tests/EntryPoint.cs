@@ -6,11 +6,12 @@ using Newtonsoft.Json;
 using NUnit.Framework;
 using RestSharp;
 using RestSharp.Serialization.Json;
+using RestSharp_Trello_Sample.Tests;
 
 namespace RestSharp_Trello_Sample
 {
     [TestFixture]
-    class EntryPoint
+    class EntryPoint : Client
     {
         public string trelloKey = "";
         public string trelloToken = "";
@@ -25,7 +26,6 @@ namespace RestSharp_Trello_Sample
         [Test, Order(1)]
         public void CreateBoard()
         {
-            RestClient client = new RestClient("https://api.trello.com/1");
             IRestRequest createBoardRequest = new RestRequest("/boards");
             
             createBoardRequest.Method = Method.POST;
@@ -51,7 +51,6 @@ namespace RestSharp_Trello_Sample
         [Test, Order(2)]
         public void CreateList()
         {
-            RestClient client = new RestClient("https://api.trello.com/1");
             IRestRequest createListRequest = new RestRequest("/boards/" + boardId + "/lists");
 
             createListRequest.Method = Method.POST;
@@ -74,7 +73,6 @@ namespace RestSharp_Trello_Sample
         [Test, Order(3)]
         public void AddingACard()
         {
-            RestClient client = new RestClient("https://api.trello.com/1");
             IRestRequest createCardRequest = new RestRequest("/cards");
 
             createCardRequest.Method = Method.POST;
@@ -103,7 +101,6 @@ namespace RestSharp_Trello_Sample
         [Test, Order(4)]
         public void UpdateCard()
         {
-            RestClient client = new RestClient("https://api.trello.com/1");
             IRestRequest updateCardRequest = new RestRequest("/cards/" + cardId);
 
             updateCardRequest.Method = Method.PUT;
@@ -129,7 +126,6 @@ namespace RestSharp_Trello_Sample
         [Test, Order(5)]
         public void DeleteBoard()
         {
-            RestClient client = new RestClient("https://api.trello.com/1");
             IRestRequest deleteBoardRequest = new RestRequest("/boards/" + boardId);
 
             deleteBoardRequest.Method = Method.DELETE;
@@ -146,7 +142,6 @@ namespace RestSharp_Trello_Sample
         [Test, Order(6)]
         public void GetBoard()
         {
-            RestClient client = new RestClient("https://api.trello.com/1");
             IRestRequest getBoardRequest = new RestRequest("/boards/" + boardId);
 
             string messageNotFound = "The requested resource was not found.";
