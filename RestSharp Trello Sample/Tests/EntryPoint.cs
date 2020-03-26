@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using RestSharp;
 using RestSharp.Serialization.Json;
@@ -11,11 +10,8 @@ using RestSharp_Trello_Sample.Tests;
 namespace RestSharp_Trello_Sample
 {
     [TestFixture]
-    class EntryPoint : Client
+    class EntryPoint
     {
-        public string trelloKey = "";
-        public string trelloToken = "";
-
         public string boardId = "";
         public string boardName = "";
         public string listId = "";
@@ -23,75 +19,56 @@ namespace RestSharp_Trello_Sample
         public string cardId = "";
         public string cardName = "";
 
+        public Client trelloClient = new Client();
+        public JsonDeserializer deserializer = new JsonDeserializer();
+
         [Test, Order(1)]
         public void CreateBoard()
         {
-            IRestRequest createBoardRequest = new RestRequest("/boards");
+            string boardName = "My Amazing Board";
             
-            createBoardRequest.Method = Method.POST;
-            createBoardRequest.AddParameter("name", "My Amazing Board");
-            createBoardRequest.AddParameter("key", trelloKey);
-            createBoardRequest.AddParameter("token", trelloToken);
-            createBoardRequest.AddParameter("defaultLists", "false");
+            IRestResponse createBoardResponse = trelloClient.createBoard(boardName);
+            TrelloBoardModel values = deserializer.Deserialize<TrelloBoardModel>(createBoardResponse);
 
-            IRestResponse createResponse = client.Execute(createBoardRequest);
-            Console.WriteLine(createResponse.Content);
-
-            TrelloBoardBasicModel values = new JsonDeserializer().Deserialize<TrelloBoardBasicModel>(createResponse);
-            
             boardId = values.Id;
-            boardName = values.Name;
+            this.boardName = values.Name;
 
-            Assert.AreEqual(HttpStatusCode.OK, createResponse.StatusCode);
-            Assert.AreEqual("My Amazing Board", values.Name);
-            Assert.AreEqual("private", values.Prefs[0].PermissionLevel);
+            Assert.AreEqual(HttpStatusCode.OK, createBoardResponse.StatusCode);
+            Assert.AreEqual(boardName, values.Name);
+            Assert.AreEqual("private", values.Prefs["permissionLevel"]);
             Assert.False(values.Closed);
         }
 
         [Test, Order(2)]
         public void CreateList()
         {
-            IRestRequest createListRequest = new RestRequest("/boards/" + boardId + "/lists");
+            string listName = "My Amazing List";
 
-            createListRequest.Method = Method.POST;
-            createListRequest.AddParameter("name", "My Amazing List");
-            createListRequest.AddParameter("key", trelloKey);
-            createListRequest.AddParameter("token", trelloToken);
-
-            IRestResponse createResponse = client.Execute(createListRequest);
-
-            TrelloListBasicModel values = new JsonDeserializer().Deserialize<TrelloListBasicModel>(createResponse);
+            IRestResponse createListResponse = trelloClient.createList(boardId, listName);
+            TrelloListBasicModel values = deserializer.Deserialize<TrelloListBasicModel>(createListResponse);
 
             listId = values.Id;
-            listName = values.Name;
+            this.listName = values.Name;
 
-            Assert.AreEqual(HttpStatusCode.OK, createResponse.StatusCode);
-            Assert.AreEqual("My Amazing List", values.Name);
+            Assert.AreEqual(HttpStatusCode.OK, createListResponse.StatusCode);
+            Assert.AreEqual(listName, values.Name);
             Assert.False(values.Closed);
         }
 
         [Test, Order(3)]
         public void AddingACard()
         {
-            IRestRequest createCardRequest = new RestRequest("/cards");
+            string carName = "My Amazing Card";
+            IRestResponse addCardResponse = trelloClient.addCardToList(boardId, cardName, listId);
 
-            createCardRequest.Method = Method.POST;
-            createCardRequest.AddParameter("name", "My Amazing Card");
-            createCardRequest.AddParameter("idList", listId);
-            createCardRequest.AddParameter("keepFromSource", "all");
-            createCardRequest.AddParameter("key", trelloKey);
-            createCardRequest.AddParameter("token", trelloToken);
-
-            IRestResponse createResponse = client.Execute(createCardRequest);
-
-            TrelloCardBasicModel values = new JsonDeserializer().Deserialize<TrelloCardBasicModel>(createResponse);
+            TrelloCardBasicModel values = deserializer.Deserialize<TrelloCardBasicModel>(addCardResponse);
 
             cardId = values.Id;
-            cardName = values.Name;
+            this.cardName = values.Name;
 
-            Assert.AreEqual(HttpStatusCode.OK, createResponse.StatusCode);
-            Assert.AreEqual("My Amazing Card", values.Name);
-            Assert.AreEqual(false, values.Closed);
+            Assert.AreEqual(HttpStatusCode.OK, addCardResponse.StatusCode);
+            Assert.AreEqual(cardName, values.Name);
+            Assert.False(values.Closed);
             Assert.AreEqual(listId, values.IdList);
             Assert.AreEqual(boardId, values.IdBoard);
             Assert.Zero(values.Badges[0].Votes);
@@ -101,22 +78,18 @@ namespace RestSharp_Trello_Sample
         [Test, Order(4)]
         public void UpdateCard()
         {
-            IRestRequest updateCardRequest = new RestRequest("/cards/" + cardId);
+            string cardName = "My Amazing Card Updated!";
+            Dictionary<string, string> extraParams = new Dictionary<string, string>
+            {
+                { "name", cardName }
+            };
 
-            updateCardRequest.Method = Method.PUT;
-            updateCardRequest.AddParameter("name", "My Amazing Card Updated!");
-            updateCardRequest.AddParameter("idList", listId);
-            updateCardRequest.AddParameter("token", trelloToken);
-            updateCardRequest.AddParameter("key", trelloKey);
-            updateCardRequest.AddParameter("idBoard", boardId);
+            IRestResponse updateCardResponse = trelloClient.updateCard(boardId, listId, cardId, extraParams);
+            TrelloCardBasicModel values = deserializer.Deserialize<TrelloCardBasicModel>(updateCardResponse);
 
-            IRestResponse createResponse = client.Execute(updateCardRequest);
-
-            TrelloCardBasicModel values = new JsonDeserializer().Deserialize<TrelloCardBasicModel>(createResponse);
-
-            Assert.AreEqual(HttpStatusCode.OK, createResponse.StatusCode);
-            Assert.AreEqual("My Amazing Card Updated!", values.Name);
-            Assert.AreEqual(false, values.Closed);
+            Assert.AreEqual(HttpStatusCode.OK, updateCardResponse.StatusCode);
+            Assert.AreEqual(cardName, values.Name);
+            Assert.False(values.Closed);
             Assert.AreEqual(listId, values.IdList);
             Assert.AreEqual(boardId, values.IdBoard);
             Assert.Zero(values.Badges[0].Votes);
@@ -126,34 +99,23 @@ namespace RestSharp_Trello_Sample
         [Test, Order(5)]
         public void DeleteBoard()
         {
-            IRestRequest deleteBoardRequest = new RestRequest("/boards/" + boardId);
+            IRestResponse deleteBoardResponse = trelloClient.deleteBoard(boardId);
 
-            deleteBoardRequest.Method = Method.DELETE;
-            deleteBoardRequest.AddParameter("key", trelloKey);
-            deleteBoardRequest.AddParameter("token", trelloToken);
+            TrelloBoardModel values = deserializer.Deserialize<TrelloBoardModel>(deleteBoardResponse);
 
-            IRestResponse createResponse = client.Execute(deleteBoardRequest);
-
-            TrelloBoardBasicModel values = new JsonDeserializer().Deserialize<TrelloBoardBasicModel>(createResponse);
-
+            Assert.AreEqual(HttpStatusCode.OK, deleteBoardResponse.StatusCode);
             Assert.IsNull(values._Value);
         }
 
         [Test, Order(6)]
-        public void GetBoard()
+        public void GetBoardAfterDeleteIt()
         {
-            IRestRequest getBoardRequest = new RestRequest("/boards/" + boardId);
-
             string messageNotFound = "The requested resource was not found.";
 
-            getBoardRequest.Method = Method.GET;
-            getBoardRequest.AddParameter("key", trelloKey);
-            getBoardRequest.AddParameter("token", trelloToken);
+            IRestResponse getBoardResponse = trelloClient.getBoard(boardId);
 
-            IRestResponse createResponse = client.Execute(getBoardRequest);
-
-            Assert.AreEqual(HttpStatusCode.NotFound, createResponse.StatusCode);
-            Assert.AreEqual(messageNotFound, createResponse.Content);
+            Assert.AreEqual(HttpStatusCode.NotFound, getBoardResponse.StatusCode);
+            Assert.AreEqual(messageNotFound, getBoardResponse.Content);
         }
     }
 }

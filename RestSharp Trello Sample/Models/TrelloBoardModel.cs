@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace RestSharp_Trello_Sample
 {
-    public class TrelloBoardBasicModel
+    public class TrelloBoardModel
     {
         [JsonProperty("id")]
         public string Id { get; set; }
@@ -17,9 +17,12 @@ namespace RestSharp_Trello_Sample
         public bool Closed { get; set; }
 
         [JsonProperty("prefs")]
-        public List<TrelloBoardPrefsModel> Prefs { get; set; }
+        public Dictionary<string, dynamic> Prefs { get; set; }
 
         [JsonProperty("_value")]
         public object? _Value { get; set; }
+
+        [JsonProperty("limits")]
+        public dynamic? Limits { get; set; }
     }
 }
