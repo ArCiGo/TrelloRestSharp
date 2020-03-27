@@ -8,8 +8,8 @@ namespace RestSharp_Trello_Sample.Tests
 {
     public class Client
     {
-        private string trelloKey = "";
-        private string trelloToken = "";
+        private string trelloKey = "fa57c23eaa4899063f6ec61012726e34";
+        private string trelloToken = "1d0b83c38f4de598165172bbcfe6049d760007dcd2b178811d8ee60152dd011c";
         private string boardId = "";
         private string boardName = "";
         private string listId = "";

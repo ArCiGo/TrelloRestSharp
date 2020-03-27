@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using RestSharp;
 using RestSharp.Serialization.Json;
@@ -33,6 +34,15 @@ namespace RestSharp_Trello_Sample
         }
 
         [Test, Order(2)]
+        public void GetBoard()
+        {
+            IRestResponse getBoardResponse = trelloClient.getBoard(trelloClient.GetBoardId());
+            TrelloBoardModel values = deserializer.Deserialize<TrelloBoardModel>(getBoardResponse);
+
+            Assert.AreEqual(HttpStatusCode.OK, getBoardResponse.StatusCode);
+        }
+
+        [Test, Order(3)]
         public void CreateList()
         {
             string listName = "My Amazing List";
@@ -48,7 +58,7 @@ namespace RestSharp_Trello_Sample
             Assert.False(values.Closed);
         }
 
-        [Test, Order(3)]
+        [Test, Order(4)]
         public void AddingACard()
         {
             string cardName = "My Amazing Card";
@@ -68,7 +78,7 @@ namespace RestSharp_Trello_Sample
             Assert.Zero(values.Badges[0].Attachments);
         }
 
-        [Test, Order(4)]
+        [Test, Order(5)]
         public void UpdateCard()
         {
             string cardName = "My Amazing Card Updated!";
@@ -89,7 +99,7 @@ namespace RestSharp_Trello_Sample
             Assert.Zero(values.Badges[0].Attachments);
         }
 
-        [Test, Order(5)]
+        [Test, Order(6)]
         public void DeleteBoard()
         {
             IRestResponse deleteBoardResponse = trelloClient.deleteBoard(trelloClient.GetBoardId());
@@ -100,7 +110,7 @@ namespace RestSharp_Trello_Sample
             Assert.IsNull(values._Value);
         }
 
-        [Test, Order(6)]
+        [Test, Order(7)]
         public void GetBoardAfterDeleteIt()
         {
             string messageNotFound = "The requested resource was not found.";
