@@ -21,7 +21,7 @@ namespace RestSharp_Trello_Sample
         {
             string boardName = "My Amazing Board";
 
-            IRestResponse createBoardResponse = trelloClient.createBoard(boardName);
+            IRestResponse createBoardResponse = trelloClient.CreateBoard(boardName);
             TrelloBoardModel values = deserializer.Deserialize<TrelloBoardModel>(createBoardResponse);
 
             trelloClient.SetBoardId(values.Id);
@@ -36,10 +36,14 @@ namespace RestSharp_Trello_Sample
         [Test, Order(2)]
         public void GetBoard()
         {
-            IRestResponse getBoardResponse = trelloClient.getBoard(trelloClient.GetBoardId());
+            IRestResponse getBoardResponse = trelloClient.GetBoard(trelloClient.GetBoardId());
             TrelloBoardModel values = deserializer.Deserialize<TrelloBoardModel>(getBoardResponse);
 
+            Console.WriteLine(getBoardResponse.Content);
+
             Assert.AreEqual(HttpStatusCode.OK, getBoardResponse.StatusCode);
+            Assert.AreEqual(trelloClient.GetBoardId(), values.Id);
+            Assert.AreEqual(trelloClient.GetBoardName(), values.Name);
         }
 
         [Test, Order(3)]
@@ -47,7 +51,7 @@ namespace RestSharp_Trello_Sample
         {
             string listName = "My Amazing List";
 
-            IRestResponse createListResponse = trelloClient.createList(trelloClient.GetBoardId(), listName);
+            IRestResponse createListResponse = trelloClient.CreateList(trelloClient.GetBoardId(), listName);
             TrelloListBasicModel values = deserializer.Deserialize<TrelloListBasicModel>(createListResponse);
 
             trelloClient.SetListId(values.Id);
@@ -62,7 +66,7 @@ namespace RestSharp_Trello_Sample
         public void AddingACard()
         {
             string cardName = "My Amazing Card";
-            IRestResponse addCardResponse = trelloClient.addCardToList(trelloClient.GetBoardId(), cardName, trelloClient.GetListId());
+            IRestResponse addCardResponse = trelloClient.AddCardToList(trelloClient.GetBoardId(), cardName, trelloClient.GetListId());
 
             TrelloCardBasicModel values = deserializer.Deserialize<TrelloCardBasicModel>(addCardResponse);
 
@@ -74,8 +78,19 @@ namespace RestSharp_Trello_Sample
             Assert.False(values.Closed);
             Assert.AreEqual(trelloClient.GetListId(), values.IdList);
             Assert.AreEqual(trelloClient.GetBoardId(), values.IdBoard);
-            Assert.Zero(values.Badges[0].Votes);
-            Assert.Zero(values.Badges[0].Attachments);
+            Assert.Zero(values.Badges["votes"]);
+            Assert.Zero(values.Badges["attachments"]);
+
+            /* Getting nested JSON objects */
+
+            // using a Dictionary property
+            //foreach (var item in values.Badges["attachmentsByType"]["trello"])
+            //{
+            //    Console.WriteLine("Key: " + item.Key + ", Value: " + item.Value);
+            //}
+
+            // using a dynamic property
+            Assert.Zero(values.Badges["attachmentsByType"]["trello"]["board"]);
         }
 
         [Test, Order(5)]
@@ -87,7 +102,7 @@ namespace RestSharp_Trello_Sample
                 { "name", cardName }
             };
 
-            IRestResponse updateCardResponse = trelloClient.updateCard(trelloClient.GetBoardId(), trelloClient.GetListId(), trelloClient.GetCardId(), extraParams);
+            IRestResponse updateCardResponse = trelloClient.UpdateCard(trelloClient.GetBoardId(), trelloClient.GetListId(), trelloClient.GetCardId(), extraParams);
             TrelloCardBasicModel values = deserializer.Deserialize<TrelloCardBasicModel>(updateCardResponse);
 
             Assert.AreEqual(HttpStatusCode.OK, updateCardResponse.StatusCode);
@@ -95,14 +110,14 @@ namespace RestSharp_Trello_Sample
             Assert.False(values.Closed);
             Assert.AreEqual(trelloClient.GetListId(), values.IdList);
             Assert.AreEqual(trelloClient.GetBoardId(), values.IdBoard);
-            Assert.Zero(values.Badges[0].Votes);
-            Assert.Zero(values.Badges[0].Attachments);
+            Assert.Zero(values.Badges["votes"]);
+            Assert.Zero(values.Badges["attachments"]);
         }
 
         [Test, Order(6)]
         public void DeleteBoard()
         {
-            IRestResponse deleteBoardResponse = trelloClient.deleteBoard(trelloClient.GetBoardId());
+            IRestResponse deleteBoardResponse = trelloClient.DeleteBoard(trelloClient.GetBoardId());
 
             TrelloBoardModel values = deserializer.Deserialize<TrelloBoardModel>(deleteBoardResponse);
 
@@ -115,7 +130,7 @@ namespace RestSharp_Trello_Sample
         {
             string messageNotFound = "The requested resource was not found.";
 
-            IRestResponse getBoardResponse = trelloClient.getBoard(trelloClient.GetBoardId());
+            IRestResponse getBoardResponse = trelloClient.GetBoard(trelloClient.GetBoardId());
 
             Assert.AreEqual(HttpStatusCode.NotFound, getBoardResponse.StatusCode);
             Assert.AreEqual(messageNotFound, getBoardResponse.Content);

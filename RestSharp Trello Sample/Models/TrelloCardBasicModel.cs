@@ -22,7 +22,10 @@ namespace RestSharp_Trello_Sample
         [JsonProperty("idBoard")]
         public string IdBoard { get; set; }
 
+        //[JsonProperty("badges")]
+        //public Dictionary<string, dynamic>? Badges { get; set; }
+
         [JsonProperty("badges")]
-        public List<TrelloCardBadgesModel> Badges { get; set; }
+        public dynamic? Badges { get; set; }
     }
 }

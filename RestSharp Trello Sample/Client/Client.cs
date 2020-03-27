@@ -3,6 +3,7 @@ using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using RestSharp_Trello_Sample.Utilities;
 
 namespace RestSharp_Trello_Sample.Tests
 {
@@ -17,7 +18,7 @@ namespace RestSharp_Trello_Sample.Tests
         private string cardId = "";
         private string cardName = "";
 
-        private RestClient trelloClient = new RestClient("https://api.trello.com/1");
+        private readonly RestClient trelloClient = new RestClient("https://api.trello.com/1");
 
         public string GetBoardId()
         {
@@ -79,7 +80,7 @@ namespace RestSharp_Trello_Sample.Tests
             cardName = value;
         }
 
-        internal IRestResponse getBoard(string boardId)
+        internal IRestResponse GetBoard(string boardId)
         {
             IRestRequest getBoardRequest = new RestRequest("/boards/" + boardId);
 
@@ -92,7 +93,7 @@ namespace RestSharp_Trello_Sample.Tests
             return createResponse;
         }
 
-        internal IRestResponse createBoard(string boardName, Dictionary<string, string> extraParams = null)
+        internal IRestResponse CreateBoard(string boardName, Dictionary<string, string> extraParams = null)
         {
             IRestRequest createBoardRequest = new RestRequest("/boards");
             createBoardRequest.Method = Method.POST;
@@ -102,14 +103,14 @@ namespace RestSharp_Trello_Sample.Tests
             //Need to move below to extra params
             createBoardRequest.AddParameter("defaultLists", "false");
             //TODO: Above
-            addExtraParams(extraParams, createBoardRequest);
+            Utilities.Utilities.AddExtraParams(extraParams, createBoardRequest);
 
             IRestResponse createBoardResponse = trelloClient.Execute(createBoardRequest);
             Console.WriteLine(createBoardResponse.Content);
             return createBoardResponse;
         }
 
-        internal IRestResponse createBoard()
+        internal IRestResponse CreateBoard()
         {
             IRestRequest createBoardRequest = new RestRequest("/boards");
 
@@ -125,7 +126,7 @@ namespace RestSharp_Trello_Sample.Tests
             return createBoardResponse;
         }
 
-        internal IRestResponse deleteBoard(string boardId)
+        internal IRestResponse DeleteBoard(string boardId)
         {
             IRestRequest deleteBoardRequest = new RestRequest("/boards/" + boardId);
 
@@ -138,7 +139,7 @@ namespace RestSharp_Trello_Sample.Tests
             return deleteBoardResponse;
         }
 
-        internal IRestResponse createList(string boardId, string listName, Dictionary<string, string> extraParams = null)
+        internal IRestResponse CreateList(string boardId, string listName, Dictionary<string, string> extraParams = null)
         {
             IRestRequest createListRequest = new RestRequest("/boards/" + boardId + "/lists");
 
@@ -146,14 +147,14 @@ namespace RestSharp_Trello_Sample.Tests
             createListRequest.AddParameter("name", listName);
             createListRequest.AddParameter("key", trelloKey);
             createListRequest.AddParameter("token", trelloToken);
-            addExtraParams(extraParams, createListRequest);
+            Utilities.Utilities.AddExtraParams(extraParams, createListRequest);
 
             IRestResponse createListResponse = trelloClient.Execute(createListRequest);
 
             return createListResponse;
         }
 
-        internal IRestResponse addCardToList(string boardId, string cardName, string listId, Dictionary<string, string> extraParams = null)
+        internal IRestResponse AddCardToList(string boardId, string cardName, string listId, Dictionary<string, string> extraParams = null)
         {
             IRestRequest addCardRequest = new RestRequest("/cards");
 
@@ -166,14 +167,14 @@ namespace RestSharp_Trello_Sample.Tests
             //TODO: Above
             addCardRequest.AddParameter("key", trelloKey);
             addCardRequest.AddParameter("token", trelloToken);
-            addExtraParams(extraParams, addCardRequest);
+            Utilities.Utilities.AddExtraParams(extraParams, addCardRequest);
 
             IRestResponse cardAdditionResponse = trelloClient.Execute(addCardRequest);
 
             return cardAdditionResponse;
         }
 
-        internal IRestResponse updateCard(string boardId, string listId, string cardId, Dictionary<string, string> extraParams = null)
+        internal IRestResponse UpdateCard(string boardId, string listId, string cardId, Dictionary<string, string> extraParams = null)
         {
             IRestRequest updateCardRequest = new RestRequest("/cards/" + cardId);
 
@@ -182,22 +183,11 @@ namespace RestSharp_Trello_Sample.Tests
             updateCardRequest.AddParameter("key", trelloKey);
             updateCardRequest.AddParameter("idBoard", boardId);
             updateCardRequest.AddParameter("idList", listId);
-            addExtraParams(extraParams, updateCardRequest);
+            Utilities.Utilities.AddExtraParams(extraParams, updateCardRequest);
 
             IRestResponse updateCardResponse = trelloClient.Execute(updateCardRequest);
 
             return updateCardResponse;
-        }
-
-        private void addExtraParams(Dictionary<string, string> extraParams, IRestRequest request)
-        {
-            if (extraParams != null)
-            {
-                foreach (KeyValuePair<string, string> param in extraParams)
-                {
-                    request.AddParameter(param.Key, param.Value);
-                }
-            }
         }
     }
 }
