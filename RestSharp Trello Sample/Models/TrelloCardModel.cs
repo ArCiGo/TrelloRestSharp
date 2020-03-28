@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RestSharp_Trello_Sample
 {
-    class TrelloCardBasicModel
+    class TrelloCardModel
     {
         [JsonProperty("id")]
         public string Id { get; set; }

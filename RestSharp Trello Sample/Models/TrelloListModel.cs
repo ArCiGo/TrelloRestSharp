@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace RestSharp_Trello_Sample
 {
-    public class TrelloListBasicModel
+    public class TrelloListModel
     {
         [JsonProperty("id")]
         public string Id { get; set; }

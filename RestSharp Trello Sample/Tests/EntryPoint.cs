@@ -52,7 +52,7 @@ namespace RestSharp_Trello_Sample
             string listName = "My Amazing List";
 
             IRestResponse createListResponse = trelloClient.CreateList(trelloClient.GetBoardId(), listName);
-            TrelloListBasicModel values = deserializer.Deserialize<TrelloListBasicModel>(createListResponse);
+            TrelloListModel values = deserializer.Deserialize<TrelloListModel>(createListResponse);
 
             trelloClient.SetListId(values.Id);
             trelloClient.SetListName(values.Name);
@@ -68,7 +68,7 @@ namespace RestSharp_Trello_Sample
             string cardName = "My Amazing Card";
             IRestResponse addCardResponse = trelloClient.AddCardToList(trelloClient.GetBoardId(), cardName, trelloClient.GetListId());
 
-            TrelloCardBasicModel values = deserializer.Deserialize<TrelloCardBasicModel>(addCardResponse);
+            TrelloCardModel values = deserializer.Deserialize<TrelloCardModel>(addCardResponse);
 
             trelloClient.SetCardId(values.Id);
             trelloClient.SetCardName(values.Name);
@@ -103,7 +103,7 @@ namespace RestSharp_Trello_Sample
             };
 
             IRestResponse updateCardResponse = trelloClient.UpdateCard(trelloClient.GetBoardId(), trelloClient.GetListId(), trelloClient.GetCardId(), extraParams);
-            TrelloCardBasicModel values = deserializer.Deserialize<TrelloCardBasicModel>(updateCardResponse);
+            TrelloCardModel values = deserializer.Deserialize<TrelloCardModel>(updateCardResponse);
 
             Assert.AreEqual(HttpStatusCode.OK, updateCardResponse.StatusCode);
             Assert.AreEqual(cardName, values.Name);
